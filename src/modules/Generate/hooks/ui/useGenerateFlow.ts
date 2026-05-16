@@ -35,7 +35,7 @@ export const useGenerateFlow = () => {
 
   const onSubmit = (data: GenerateApiFormValues) => {
     generate(data, {
-      onSuccess: (result: any) => {
+      onSuccess: (result: unknown) => {
         // apiClient unwraps .data, so result IS the data object directly
         const info = result as GeneratedInfo;
         const baseUrl = import.meta.env.VITE_API_URL || "";
@@ -50,7 +50,7 @@ export const useGenerateFlow = () => {
           apiUrl: fullUrl,
         });
       },
-      onError: (error: any) => {
+      onError: (error: Error) => {
         toast.error(error.message || "Failed to generate API");
       },
     });

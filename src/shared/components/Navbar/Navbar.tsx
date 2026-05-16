@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Zap, Sun, Moon } from "lucide-react";
 import { toggleTheme } from "../../../app/theme";
 import {
@@ -11,11 +11,9 @@ import {
 } from "./Navbar.styles";
 
 export const Navbar = () => {
-  const [isDark, setIsDark] = useState(true);
-
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"));
-  }, []);
+  const [isDark, setIsDark] = useState(
+    () => document.documentElement.classList.contains("dark"),
+  );
 
   const handleToggle = () => {
     toggleTheme();

@@ -22,11 +22,11 @@ export const usePlaygroundFlow = () => {
   // Keep track of the most recent response to show in the viewer
   const [lastResponse, setLastResponse] = useState<{
     status: number;
-    data: any;
+    data: unknown;
     error?: string;
   } | null>(null);
 
-  const [responsesCache, setResponsesCache] = useState<Record<string, { status: number; data: any; error?: string }>>({});
+  const [responsesCache, setResponsesCache] = useState<Record<string, { status: number; data: unknown; error?: string }>>({});
   const [requestBodyCache, setRequestBodyCache] = useState<Record<string, string>>({});
 
   const getQuery = useGetFakeApiDataQuery(apiId, route, { enabled: !!apiId && !!route });
@@ -61,10 +61,10 @@ export const usePlaygroundFlow = () => {
 
           try {
             parsedBody = requestBody ? JSON.parse(cleanBodyForParse) : {};
-          } catch (err) {
+          } catch {
             parsedBody = new Function("return " + (cleanBodyForParse || "{}"))();
           }
-        } catch (e) {
+        } catch {
           toast.error("Invalid JSON in Request Body");
           return;
         }
@@ -99,7 +99,7 @@ export const usePlaygroundFlow = () => {
       } else {
         toast.error(`Request failed with status ${res.status}`);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       const errorResponse = { status: 500, data: { message: "Internal Server Error or Network Issue" } };
       setLastResponse(errorResponse);
@@ -120,14 +120,14 @@ export const usePlaygroundFlow = () => {
       try {
         // Try strict JSON parse first
         parsed = JSON.parse(cleanBody);
-      } catch (err) {
+      } catch {
         // Fallback to loose JavaScript object parsing (handles trailing commas, single quotes, unquoted keys)
         parsed = new Function("return " + cleanBody)();
       }
 
       setRequestBody(JSON.stringify(parsed, null, 2));
       toast.success("JSON Formatted");
-    } catch (e: any) {
+    } catch {
       toast.error("Cannot format: Invalid syntax");
     }
   };

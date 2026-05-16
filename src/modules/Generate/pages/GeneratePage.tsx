@@ -8,7 +8,6 @@ import {
   ExternalLink,
   RotateCcw,
   Terminal,
-  Circle,
 } from "lucide-react";
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
@@ -57,8 +56,6 @@ import {
   EmptyTitle,
   EmptySub,
   LoadingPanel,
-  LoadingSteps,
-  LoadingStep,
 } from "./GeneratePage.styles";
 
 SyntaxHighlighter.registerLanguage("json", json);
@@ -121,7 +118,7 @@ export const GeneratePage = () => {
     setTimeout(() => setter(false), 2000);
   };
 
-  const apiData = result.apiData as any;
+  const apiData = result.apiData as Record<string, unknown> | undefined;
   const schemaJson = apiData?.schema_json
     ? JSON.stringify(apiData.schema_json, null, 2)
     : null;

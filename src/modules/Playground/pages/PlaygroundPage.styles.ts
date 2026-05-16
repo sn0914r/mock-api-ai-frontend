@@ -1,10 +1,4 @@
 import styled from "@emotion/styled";
-import { keyframes } from "@emotion/react";
-
-const fadeIn = keyframes`
-  from { opacity: 0; }
-  to   { opacity: 1; }
-`;
 
 export const PageShell = styled.div`
   display: flex;

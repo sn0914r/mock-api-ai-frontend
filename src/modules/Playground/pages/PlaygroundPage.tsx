@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -6,7 +5,6 @@ import {
   Circle,
   Copy,
   Loader2,
-  RefreshCw,
   Send,
   Terminal,
 } from "lucide-react";

@@ -1,10 +1,10 @@
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 interface ApiOptions extends Omit<RequestInit, "body"> {
-  body?: any;
+  body?: unknown;
 }
 
-export const apiClient = async <T = any>(
+export const apiClient = async <T = unknown>(
   endPoint: string,
   options: ApiOptions = {},
 ): Promise<T> => {
@@ -26,7 +26,7 @@ export const apiClient = async <T = any>(
   const responseP: {
     success: boolean;
     message?: string;
-    data: Record<string, any>[];
+    data: Record<string, unknown>[];
   } = await response.json();
 
   if (!responseP.success) {
