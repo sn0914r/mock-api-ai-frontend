@@ -4,10 +4,10 @@ interface ApiOptions extends Omit<RequestInit, "body"> {
   body?: any;
 }
 
-export const apiClient = async (
+export const apiClient = async <T = any>(
   endPoint: string,
   options: ApiOptions = {},
-): Promise<Record<string, any>[]> => {
+): Promise<T> => {
   const url = `${BASE_URL}/${endPoint}`;
 
   const defaultHeaders = {
@@ -33,5 +33,5 @@ export const apiClient = async (
     throw new Error(responseP.message || "Something went wrong");
   }
 
-  return responseP.data;
+  return responseP.data as T;
 };
