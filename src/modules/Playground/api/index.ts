@@ -1,5 +1,13 @@
 import { apiClient as api } from "../../../lib/apiClient";
 
+export interface FakeApiData {
+  id: string;
+  route: string;
+  schema_json: Record<string, string>;
+  data_json: Record<string, unknown>[];
+  created_at: string;
+}
+
 export const getApiData = async ({
   apiId,
   route,
@@ -7,13 +15,7 @@ export const getApiData = async ({
   apiId: string;
   route: string;
 }) => {
-  return api<{
-    id: string;
-    route: string;
-    schema_json: Record<string, string>;
-    data_json: Record<string, unknown>[];
-    created_at: string;
-  }>(`api/${apiId}${route.startsWith('/') ? route : '/' + route}`, {
+  return api<FakeApiData>(`api/${apiId}${route.startsWith('/') ? route : '/' + route}`, {
     method: "GET",
   });
 };

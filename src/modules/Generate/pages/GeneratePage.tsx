@@ -15,6 +15,7 @@ import { atomOneLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { vs2015 } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { toast } from "sonner";
 import { useGenerateFlow } from "../hooks/ui/useGenerateFlow";
+import { type FakeApiData } from "../../Playground/api";
 import {
   PageShell,
   LeftPanel,
@@ -118,7 +119,7 @@ export const GeneratePage = () => {
     setTimeout(() => setter(false), 2000);
   };
 
-  const apiData = result.apiData as Record<string, unknown> | undefined;
+  const apiData = result.apiData as FakeApiData | undefined;
   const schemaJson = apiData?.schema_json
     ? JSON.stringify(apiData.schema_json, null, 2)
     : null;
