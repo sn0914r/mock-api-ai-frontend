@@ -1,73 +1,149 @@
-# React + TypeScript + Vite
+# Mock API AI Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend dashboard and API playground for generating, testing, and managing dynamic mock REST APIs.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Live Demo
 
-## React Compiler
+https://mock-api-ai.pages.dev/
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## Related Repositories
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- [Mock API AI Backend](https://github.com/sn0914r/mock-api-ai-backend)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Features
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Generate mock REST APIs from natural language prompts
+- Dynamic schema and mock data generation
+- Interactive API playground for testing CRUD operations
+- Real-time request body editing
+- Syntax-highlighted API responses
+- Copy API responses to clipboard
+- Dark and light theme support
+- Responsive UI
+
+---
+
+## Tech Stack
+
+### Frontend
+
+- React
+- Vite
+- React Router
+
+### State Management & Data Fetching
+
+- TanStack Query
+
+### Forms & Validation
+
+- React Hook Form
+- Zod
+
+### UI & Styling
+
+- Emotion
+- Bootstrap
+- Lucide React
+- Sonner
+- React Syntax Highlighter
+
+---
+
+## Folder Structure
+
+The frontend follows a feature-based modular architecture with separate modules for API generation and API playground functionality.
+
+```txt
+src/
+├── app/
+│   ├── App.tsx
+│   ├── AppRouter.tsx
+│   ├── GlobalStyles.tsx
+│   ├── Providers.tsx
+│   └── theme.ts
+│
+├── modules/
+│   ├── Generate/
+│   │   ├── api/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── pages/
+│   │   └── Generate.router.tsx
+│   │
+│   └── Playground/
+│       ├── api/
+│       ├── components/
+│       ├── hooks/
+│       ├── pages/
+│       └── Playground.router.tsx
+│
+├── shared/
+│   └── Navbar/
+│
+├── lib/
+│   ├── apiClient.ts
+│   └── reactQuery.ts
+│
+├── utils/
+│   ├── copy.ts
+│   ├── getTheme.ts
+│   └── normalizeRoute.ts
+│
+└── main.tsx
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Environment Variables
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Create a `.env` file in the root directory:
+
+```env
+VITE_API_URL=http://localhost:3000
 ```
+
+---
+
+## Installation
+
+```bash
+git clone https://github.com/sn0914r/mock-api-ai-frontend.git
+
+cd mock-api-ai-frontend
+
+npm install
+
+npm run dev
+```
+
+---
+
+## Screenshots
+
+### Generate API
+
+![Generate API](./screenshots/generate-api.png)
+
+### API Playground
+
+![API Playground](./screenshots/api-playground.png)
+
+### Playground Editor
+
+![Playground Editor](./screenshots/playground-editor.png)
+
+---
+
+## Security
+
+- Centralized API client for handling server-side validation errors
+- Form validation using React Hook Form and Zod
+- Safe JSON payload parsing and validation
+- Structured error handling for invalid API requests
