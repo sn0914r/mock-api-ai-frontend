@@ -1,5 +1,11 @@
 import { apiClient as api } from "../../../lib/apiClient";
 
+interface GenerateApiData {
+  apiId: string;
+  route: string;
+  apiUrl: string;
+}
+
 export const generateApi = async ({
   prompt,
   limit,
@@ -7,11 +13,7 @@ export const generateApi = async ({
   prompt: string;
   limit: number;
 }) => {
-  return api<{
-    apiId: string;
-    route: string;
-    apiUrl: string;
-  }>("generate", {
+  return api<GenerateApiData>("/generate", {
     method: "POST",
     body: { prompt, limit },
   });

@@ -1,98 +1,93 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { generateApiSchema, type GenerateApiFormValues } from "../../api/schema";
-import { useGenerateApiMutation } from "../api/useGenerateApiMutation";
-import { toast } from "sonner";
-import { useGetFakeApiDataQuery } from "../../../Playground/hooks/api/useGetFakeApiDataQuery";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getTheme } from "../../../../utils/getTheme";
+import {
+  atomOneLight,
+  vs2015,
+} from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { useGenerateForm } from "./useGenerateForm";
+import { useGetApiData } from "./useGetApiData";
+import { copy } from "../../../../utils/copy";
 
-interface GeneratedInfo {
-  apiId: string;
-  route: string;
-  apiUrl: string;
-}
+export const useGeneratePageFlow = () => {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<"schema" | "response" | "details">(
+    "response",
+  );
+  const [isUrlCopied, setIsUrlCopied] = useState(false);
+  const [isCodeCopied, setIsCodeCopied] = useState(false);
 
-export const useGenerateFlow = () => {
-  const [generatedInfo, setGeneratedInfo] = useState<GeneratedInfo | null>(null);
+  const form = useGenerateForm();
+  const apiData = useGetApiData(form.generatedApiData);
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<GenerateApiFormValues>({
-    resolver: zodResolver(generateApiSchema),
-    defaultValues: {
-      prompt: "",
-      limit: 10,
-    },
-  });
+  const theme = getTheme();
+  const syntaxStyle = theme === "dark" ? vs2015 : atomOneLight;
 
-  const promptValue = watch("prompt");
-
-  const { mutate: generate, isPending: isGenerating } = useGenerateApiMutation();
-
-  const onSubmit = (data: GenerateApiFormValues) => {
-    generate(data, {
-      onSuccess: (result: unknown) => {
-        // apiClient unwraps .data, so result IS the data object directly
-        const info = result as GeneratedInfo;
-        const baseUrl = import.meta.env.VITE_API_URL || "";
-        const fullUrl = info.apiUrl.startsWith("http") 
-          ? info.apiUrl 
-          : `${baseUrl}${info.apiUrl.startsWith("/") ? "" : "/"}${info.apiUrl}`;
-
-        toast.success("API generated successfully!");
-        setGeneratedInfo({
-          apiId: info.apiId,
-          route: info.route,
-          apiUrl: fullUrl,
-        });
-      },
-      onError: (error: Error) => {
-        toast.error(error.message || "Failed to generate API");
-      },
-    });
-  };
-
-  const handleExampleClick = (prompt: string) => {
-    setValue("prompt", prompt, { shouldValidate: true });
-  };
-
-  const handleReset = () => {
-    setGeneratedInfo(null);
-    setValue("prompt", "");
-    setValue("limit", 10);
-  };
-
-  // Fetch generated API data (schema + sample response) after generation
-  const {
-    data: apiData,
-    isLoading: isFetchingData,
-  } = useGetFakeApiDataQuery(
-    generatedInfo?.apiId || "",
-    // strip leading slash for the query
-    (generatedInfo?.route || "").replace(/^\//, ""),
-    {
-      enabled: !!generatedInfo?.apiId && !!generatedInfo?.route,
-    }
+  const schemaJson = useMemo(
+    () => (apiData.schema ? JSON.stringify(apiData.schema, null, 2) : null),
+    [apiData],
   );
 
+  const dataJson = useMemo(
+    () => (apiData?.data ? JSON.stringify(apiData.data, null, 2) : null),
+    [apiData],
+  );
+
+  const currentCode = activeTab === "schema" ? schemaJson : dataJson;
+
+  const createdAt = useMemo(
+    () =>
+      apiData.details.created && apiData.details.created !== "N/A"
+        ? new Date(apiData.details.created).toLocaleString("en-IN", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          })
+        : "-",
+    [apiData],
+  );
+
+  const copyUrlFn = () => {
+    const fullUrl = form.generatedApiData?.fullUrl;
+    if (fullUrl) {
+      copy(fullUrl, "API endpoint", setIsUrlCopied);
+    }
+  };
+
+  const copyCodeFn = () => {
+    if (currentCode) {
+      copy(
+        currentCode,
+        activeTab === "schema" ? "Schema" : "Response",
+        setIsCodeCopied,
+      );
+    }
+  };
+
+  const goToPlayground = () => {
+    if (form.generatedApiData) {
+      navigate(
+        `/playground?apiId=${form.generatedApiData.apiId}&route=${form.generatedApiData.route}`,
+      );
+    }
+  };
+
   return {
-    form: {
-      register,
-      handleSubmit: handleSubmit(onSubmit),
-      errors,
-      isGenerating,
-      handleExampleClick,
-      promptValue,
+    form,
+    apiData,
+    tabs: {
+      activeTab,
+      setActiveTab,
+      currentCode,
+      createdAt,
+      itemCount: apiData.details.items,
     },
-    result: {
-      generatedInfo,
-      apiData,
-      isFetchingData,
-      handleReset,
+    ui: {
+      syntaxStyle,
+      isUrlCopied,
+      isCodeCopied,
+      copyCodeFn,
+      copyUrlFn,
+      goToPlayground,
     },
   };
 };

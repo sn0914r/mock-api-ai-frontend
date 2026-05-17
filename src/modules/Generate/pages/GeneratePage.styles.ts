@@ -62,137 +62,6 @@ export const SectionLabel = styled.div`
   margin-bottom: var(--space-1);
 `;
 
-export const FormBody = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  flex: 1;
-`;
-
-export const InputGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-`;
-
-export const Label = styled.label`
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-dim);
-`;
-
-export const Textarea = styled.textarea`
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3);
-  font-family: var(--font-sans);
-  font-size: 13px;
-  color: var(--text);
-  min-height: 90px;
-  resize: vertical;
-  line-height: 1.5;
-  transition: border-color var(--transition);
-
-  &:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
-
-  &::placeholder {
-    color: var(--text-muted);
-  }
-`;
-
-export const NumberInput = styled.input`
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 7px 10px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--text);
-  width: 80px;
-  transition: border-color var(--transition);
-
-  &:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
-`;
-
-export const ErrorText = styled.span`
-  color: var(--danger);
-  font-size: 11px;
-`;
-
-/* ── Chips ── */
-export const ChipsRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-`;
-
-export const Chip = styled.button`
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  font-size: 11px;
-  color: var(--text-dim);
-  cursor: pointer;
-  transition: all var(--transition);
-  text-align: left;
-  line-height: 1.4;
-  white-space: pre-wrap;
-
-  &:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-dim);
-  }
-`;
-
-/* ── Footer ── */
-export const FormFooter = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  margin-top: auto;
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border);
-`;
-
-export const SubmitBtn = styled.button`
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 8px 16px;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all var(--transition);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-
-  &:hover:not(:disabled) {
-    background: var(--accent-hover);
-  }
-
-  &:active:not(:disabled) {
-    transform: scale(0.98);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
 /* ═══════════ RIGHT PANEL ═══════════ */
 
 export const ResultsWrapper = styled.div`
@@ -384,7 +253,7 @@ export const CopyBtn = styled.button`
 `;
 
 export const CodeBody = styled.div`
-  padding: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   overflow-x: auto;
   overflow-y: auto;
   flex: 1;
@@ -528,4 +397,136 @@ export const LoadingStep = styled.div<{
   font-size: 13px;
   font-weight: ${(p) => (p.status === "loading" ? 500 : 400)};
   transition: all var(--transition);
+`;
+
+/* ═══════════ GENERATE FORM ═══════════ */
+export const FormBody = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  flex: 1;
+`;
+
+export const InputGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+`;
+
+export const Label = styled.label`
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+`;
+
+export const Textarea = styled.textarea`
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text);
+  min-height: 90px;
+  resize: vertical;
+  line-height: 1.5;
+  transition: border-color var(--transition);
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+`;
+
+export const NumberInput = styled.input`
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  width: 80px;
+  transition: border-color var(--transition);
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+`;
+
+export const ErrorText = styled.span`
+  color: var(--danger);
+  font-size: 11px;
+`;
+
+/* ── Chips ── */
+export const ChipsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+`;
+
+export const Chip = styled.button`
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: left;
+  line-height: 1.4;
+  white-space: pre-wrap;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+`;
+
+/* ── Footer ── */
+export const FormFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+`;
+
+export const SubmitBtn = styled.button`
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;

@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { keyframes } from "@emotion/react";
 
 export const PageShell = styled.div`
   display: flex;
@@ -239,4 +240,30 @@ export const ResponseBody = styled.div`
     padding: var(--space-4) !important;
     background: transparent !important;
   }
+`;
+
+const pulse = keyframes`
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+`;
+
+export const LoadingSkeleton = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--bg);
+  flex: 1;
+`;
+
+export const SkeletonLine = styled.div<{ width?: string }>`
+  height: 12px;
+  width: ${(p) => p.width || "100%"};
+  background: var(--border);
+  border-radius: var(--radius-sm);
+  animation: ${pulse} 1.5s infinite ease-in-out;
 `;

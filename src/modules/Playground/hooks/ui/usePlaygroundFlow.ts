@@ -1,161 +1,191 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { toast } from "sonner";
+import { usePlaygroundSessions } from "./usePlaygroundSessions";
 import { useGetFakeApiDataQuery } from "../api/useGetFakeApiDataQuery";
 import { usePostFakeApiDataMutation } from "../api/usePostFakeApiDataMutation";
 import { usePutFakeApiDataMutation } from "../api/usePutFakeApiDataMutation";
 import { usePatchFakeApiDataMutation } from "../api/usePatchFakeApiDataMutation";
 import { useDeleteFakeApiDataMutation } from "../api/useDeleteFakeApiDataMutation";
+import { toast } from "sonner";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+type Tabs = "response" | "headers";
 
 export const usePlaygroundFlow = () => {
   const [searchParams] = useSearchParams();
+
   const apiId = searchParams.get("apiId") || "";
   const route = searchParams.get("route") || "";
 
-  const [method, setMethod] = useState<HttpMethod>("GET");
-  const [recordId, setRecordId] = useState("");
-  const [requestBody, setRequestBody] = useState("");
-  const [activeTab, setActiveTab] = useState<"response" | "headers">("response");
+  const [currentMethod, setCurrentMethod] = useState<HttpMethod>("GET");
+  const [activeTab, setActiveTab] = useState<Tabs>("response");
 
-  // Keep track of the most recent response to show in the viewer
-  const [lastResponse, setLastResponse] = useState<{
-    status: number;
-    data: unknown;
-    error?: string;
-  } | null>(null);
+  const { sessions, updateSession } = usePlaygroundSessions();
+  const currentSession = sessions[currentMethod];
 
-  const [responsesCache, setResponsesCache] = useState<Record<string, { status: number; data: unknown; error?: string }>>({});
-  const [requestBodyCache, setRequestBodyCache] = useState<Record<string, string>>({});
-
-  const getQuery = useGetFakeApiDataQuery(apiId, route, { enabled: !!apiId && !!route });
-  const postMutation = usePostFakeApiDataMutation();
-  const putMutation = usePutFakeApiDataMutation();
-  const patchMutation = usePatchFakeApiDataMutation();
-  const deleteMutation = useDeleteFakeApiDataMutation();
+  const getQuery = useGetFakeApiDataQuery(apiId, route);
+  const mutations = {
+    POST: usePostFakeApiDataMutation(),
+    PUT: usePutFakeApiDataMutation(),
+    PATCH: usePatchFakeApiDataMutation(),
+    DELETE: useDeleteFakeApiDataMutation(),
+  };
 
   const isPending =
-    getQuery.isFetching ||
-    postMutation.isPending ||
-    putMutation.isPending ||
-    patchMutation.isPending ||
-    deleteMutation.isPending;
+    getQuery.isFetching || Object.values(mutations).some((m) => m.isPending);
+
+  useEffect(() => {
+    if (getQuery.data && !sessions.GET.response) {
+      updateSession("GET", {
+        response: { status: 200, data: getQuery.data },
+      });
+    }
+  }, [getQuery.data, sessions.GET.response, updateSession]);
 
   const handleSendRequest = async () => {
-    if (!apiId || !route) {
-      toast.error("Missing API ID or Route");
+    if (currentMethod === "GET") {
+      try {
+        const refetched = await getQuery.refetch();
+        if (refetched.isError) {
+          throw refetched.error || new Error("Failed to fetch data");
+        }
+        updateSession("GET", {
+          response: { status: 200, data: refetched.data },
+        });
+        toast.success("GET request successful");
+      } catch (error: unknown) {
+        const err = error as { status?: number; message?: string };
+        const errorRes = {
+          status: err.status || 500,
+          data: err.message || "Error",
+        };
+        updateSession("GET", { response: errorRes });
+        toast.error("Request failed");
+      }
       return;
     }
 
-    setLastResponse(null);
-
-    try {
-      let parsedBody = undefined;
-      if (["POST", "PUT", "PATCH"].includes(method)) {
-        try {
-          // Clean up common MacOS typing artifacts like smart quotes before parsing
-          const cleanBodyForParse = requestBody
-            .replace(/[\u2018\u2019]/g, "'")
-            .replace(/[\u201C\u201D]/g, '"');
-
-          try {
-            parsedBody = requestBody ? JSON.parse(cleanBodyForParse) : {};
-          } catch {
-            parsedBody = new Function("return " + (cleanBodyForParse || "{}"))();
-          }
-        } catch {
-          toast.error("Invalid JSON in Request Body");
-          return;
-        }
+    if (["PUT", "PATCH", "DELETE"].includes(currentMethod)) {
+      if (!currentSession.recordId || !currentSession.recordId.toString().trim()) {
+        toast.error(`Record ID is required for ${currentMethod}`);
+        return;
       }
+    }
 
-      if (["PUT", "PATCH", "DELETE"].includes(method) && !recordId) {
-        toast.error(`Record ID is required for ${method}`);
+    let parsedBody = {};
+    if (["POST", "PUT", "PATCH"].includes(currentMethod)) {
+      const rawBody = (currentSession.body || "").trim();
+      if (!rawBody) {
+        toast.error(`Request body is required for ${currentMethod}`);
         return;
       }
 
-      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
-      const cleanRoute = route.startsWith('/') ? route : '/' + route;
-      let fullUrl = `${baseUrl}/api/${apiId}${cleanRoute}`;
-      if (["PUT", "PATCH", "DELETE"].includes(method) && recordId) {
-        fullUrl += `/${recordId}`;
+      try {
+        const cleanBody = rawBody
+          .replace(/[\u2018\u2019]/g, "'")
+          .replace(/[\u201C\u201D]/g, '"');
+        parsedBody = JSON.parse(cleanBody);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        toast.error(`Invalid JSON in request body: ${message}`);
+        return;
+      }
+    }
+
+    try {
+      let result;
+      if (currentMethod === "POST") {
+        result = await mutations.POST.mutateAsync({
+          apiId,
+          route,
+          body: parsedBody,
+        });
+      } else if (currentMethod === "PUT") {
+        result = await mutations.PUT.mutateAsync({
+          apiId,
+          route,
+          elementId: currentSession.recordId,
+          body: parsedBody,
+        });
+      } else if (currentMethod === "PATCH") {
+        result = await mutations.PATCH.mutateAsync({
+          apiId,
+          route,
+          elementId: currentSession.recordId,
+          body: parsedBody,
+        });
+      } else if (currentMethod === "DELETE") {
+        result = await mutations.DELETE.mutateAsync({
+          apiId,
+          route,
+          elementId: currentSession.recordId,
+        });
       }
 
-      const res = await fetch(fullUrl, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: parsedBody ? JSON.stringify(parsedBody) : undefined,
+      updateSession(currentMethod, {
+        response: { status: 200, data: result },
       });
 
-      const rawJson = await res.json();
-      const newResponse = { status: res.status, data: rawJson };
-      setLastResponse(newResponse);
-      setResponsesCache(prev => ({ ...prev, [method]: newResponse }));
-      
-      if (res.ok) {
-        toast.success(`${method} request successful`);
-        getQuery.refetch(); // Refetch the list to update sidebar/records
-      } else {
-        toast.error(`Request failed with status ${res.status}`);
-      }
+      toast.success(`${currentMethod} request successful`);
     } catch (error: unknown) {
-      console.error(error);
-      const errorResponse = { status: 500, data: { message: "Internal Server Error or Network Issue" } };
-      setLastResponse(errorResponse);
-      setResponsesCache(prev => ({ ...prev, [method]: errorResponse }));
-      toast.error(`Network or Internal Error`);
+      const err = error as { status?: number; message?: string };
+      const errorRes = {
+        status: err.status || 500,
+        data: err.message || "Error",
+      };
+
+      updateSession(currentMethod, { response: errorRes });
+
+      toast.error(`Request failed`);
     }
   };
 
   const handleFormatJson = () => {
-    if (!requestBody.trim()) return;
     try {
-      // Clean up common MacOS typing artifacts like smart quotes
-      const cleanBody = requestBody
-        .replace(/[\u2018\u2019]/g, "'")
-        .replace(/[\u201C\u201D]/g, '"');
+      const parsed = JSON.parse(currentSession.body);
+      updateSession(currentMethod, { body: JSON.stringify(parsed, null, 2) });
 
-      let parsed;
-      try {
-        // Try strict JSON parse first
-        parsed = JSON.parse(cleanBody);
-      } catch {
-        // Fallback to loose JavaScript object parsing (handles trailing commas, single quotes, unquoted keys)
-        parsed = new Function("return " + cleanBody)();
-      }
-
-      setRequestBody(JSON.stringify(parsed, null, 2));
       toast.success("JSON Formatted");
     } catch {
-      toast.error("Cannot format: Invalid syntax");
+      toast.error("Invalid JSON");
     }
   };
 
-  const handleMethodChange = (newMethod: HttpMethod) => {
-    setRequestBodyCache(prev => ({ ...prev, [method]: requestBody }));
-    setMethod(newMethod);
-    setLastResponse(responsesCache[newMethod] || null);
-    setRequestBody(requestBodyCache[newMethod] || "");
+  const schemaJson = getQuery.data?.data?.schema_json
+    ? JSON.stringify(getQuery.data.data.schema_json, null, 2)
+    : "";
+  const totalRecords = getQuery.data?.data?.data_json?.length ?? 0;
+  const createdAt = getQuery.data?.data?.created_at
+    ? new Date(getQuery.data.data.created_at).toLocaleString()
+    : "N/A";
+
+  const getFullUrl = () => {
+    const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+    let url = `${baseUrl}/api/${apiId}${route}`;
+    if (["PUT", "PATCH", "DELETE"].includes(currentMethod) && currentSession.recordId) {
+      url += `/${currentSession.recordId}`;
+    }
+    return url;
   };
 
   return {
     state: {
       apiId,
       route,
-      method,
-      recordId,
-      requestBody,
+      currentMethod,
       activeTab,
-      lastResponse,
       isPending,
+      currentSession,
+      fullUrl: getFullUrl(),
+      schemaJson,
+      totalRecords,
+      createdAt,
     },
-    apiData: getQuery.data,
+    apiData: getQuery.data?.data,
     actions: {
-      setMethod: handleMethodChange,
-      setRecordId,
-      setRequestBody,
+      setCurrentMethod,
       setActiveTab,
+      updateSession,
       handleSendRequest,
       handleFormatJson,
     },

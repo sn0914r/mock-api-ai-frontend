@@ -4,16 +4,21 @@ interface ApiOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
 }
 
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data?: T;
+}
+
 export const apiClient = async <T = unknown>(
   endPoint: string,
   options: ApiOptions = {},
-): Promise<T> => {
-  const url = `${BASE_URL}/${endPoint}`;
+): Promise<ApiResponse<T>> => {
+  const url = `${BASE_URL}${endPoint}`;
 
   const defaultHeaders = {
     "Content-Type": "application/json",
   };
-
   const response = await fetch(url, {
     ...options,
     body: options.body ? JSON.stringify(options.body) : undefined,
@@ -23,15 +28,11 @@ export const apiClient = async <T = unknown>(
     },
   });
 
-  const responseP: {
-    success: boolean;
-    message?: string;
-    data: Record<string, unknown>[];
-  } = await response.json();
+  const responseP: ApiResponse<T> = await response.json();
 
   if (!responseP.success) {
     throw new Error(responseP.message || "Something went wrong");
   }
 
-  return responseP.data as T;
+  return responseP;
 };

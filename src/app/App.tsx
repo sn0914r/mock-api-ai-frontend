@@ -2,7 +2,7 @@ import { Toaster } from "sonner";
 import { useEffect } from "react";
 import AppRouter from "./AppRouter";
 import { Providers } from "./Providers";
-import { Navbar } from "../shared/components/Navbar";
+import { Navbar } from "../shared/Navbar/Navbar";
 import { initTheme } from "./theme";
 
 const App = () => {

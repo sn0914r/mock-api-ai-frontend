@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Zap, Sun, Moon } from "lucide-react";
-import { toggleTheme } from "../../../app/theme";
+import { toggleTheme } from "../../app/theme";
 import {
   Nav,
   LogoGroup,
