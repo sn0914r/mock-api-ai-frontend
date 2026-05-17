@@ -1,7 +1,11 @@
+import { useState, useEffect } from "react";
 import { Copy } from "lucide-react";
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vs2015, atomOneLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
+import { atomOneDark, atomOneLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import * as S from "../pages/PlaygroundPage.styles";
+
+SyntaxHighlighter.registerLanguage("json", json);
 
 interface SchemaPreviewProps {
   schemaJson: string;
@@ -12,10 +16,23 @@ export const SchemaPreview = ({
   schemaJson,
   handleCopy,
 }: SchemaPreviewProps) => {
-  const isDark =
-    typeof document !== "undefined" &&
-    document.documentElement.classList.contains("dark");
-  const syntaxStyle = isDark ? vs2015 : atomOneLight;
+  const [theme, setTheme] = useState(() => {
+    const isDark =
+      typeof document !== "undefined" &&
+      document.documentElement.classList.contains("dark");
+    return isDark ? "dark" : "light";
+  });
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      setTheme(isDark ? "dark" : "light");
+    };
+    window.addEventListener("theme-change", handleThemeChange);
+    return () => window.removeEventListener("theme-change", handleThemeChange);
+  }, []);
+
+  const syntaxStyle = theme === "dark" ? atomOneDark : atomOneLight;
 
   if (!schemaJson) return null;
 

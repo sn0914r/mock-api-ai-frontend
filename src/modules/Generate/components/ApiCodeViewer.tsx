@@ -1,13 +1,18 @@
+import { useState, useEffect } from "react";
 import { Copy, Check } from "lucide-react";
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
+import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
+import { atomOneDark, atomOneLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import * as S from "../pages/GeneratePage.styles";
+
+SyntaxHighlighter.registerLanguage("json", json);
 
 interface ApiCodeViewerProps {
   code: string | null;
   label: string;
   isCopied: boolean;
   onCopy: () => void;
-  syntaxStyle: Record<string, React.CSSProperties>;
+  syntaxStyle?: Record<string, React.CSSProperties>;
 }
 
 export const ApiCodeViewer = ({
@@ -15,8 +20,25 @@ export const ApiCodeViewer = ({
   label,
   isCopied,
   onCopy,
-  syntaxStyle,
 }: ApiCodeViewerProps) => {
+  const [theme, setTheme] = useState(() => {
+    const isDark =
+      typeof document !== "undefined" &&
+      document.documentElement.classList.contains("dark");
+    return isDark ? "dark" : "light";
+  });
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      setTheme(isDark ? "dark" : "light");
+    };
+    window.addEventListener("theme-change", handleThemeChange);
+    return () => window.removeEventListener("theme-change", handleThemeChange);
+  }, []);
+
+  const activeSyntaxStyle = theme === "dark" ? atomOneDark : atomOneLight;
+
   return (
     <S.ResponseBlock>
       <S.ResponseBar>
@@ -32,7 +54,7 @@ export const ApiCodeViewer = ({
         {code && (
           <SyntaxHighlighter
             language="json"
-            style={syntaxStyle}
+            style={activeSyntaxStyle}
             customStyle={{ background: "transparent" }}
           >
             {code}

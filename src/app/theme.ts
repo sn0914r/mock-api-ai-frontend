@@ -58,6 +58,7 @@ export function toggleTheme(): void {
   html.classList.toggle('dark', isLight);
   html.classList.toggle('light', !isLight);
   localStorage.setItem('mf_theme', isLight ? 'dark' : 'light');
+  window.dispatchEvent(new Event('theme-change'));
 }
 
 export function initTheme(): void {
